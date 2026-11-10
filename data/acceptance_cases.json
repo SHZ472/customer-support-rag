@@ -1,0 +1,50 @@
+{
+  "database_seed": {
+    "product:BOOK-001": {"title": "Python 入门", "price_yuan": 59},
+    "order:ORD-1001": {"status": "已发货"}
+  },
+  "cases": [
+    {
+      "id": "product_exact",
+      "question": "BOOK-001 是什么书，多少钱？",
+      "route": "database",
+      "source": "product:BOOK-001",
+      "must_include": ["Python 入门", "59 元"]
+    },
+    {
+      "id": "order_exact",
+      "question": "我的订单 ORD-1001 发货了吗？",
+      "route": "database",
+      "source": "order:ORD-1001",
+      "must_include": ["ORD-1001", "已发货"]
+    },
+    {
+      "id": "shipping_faq",
+      "question": "付完钱一般多久能发货？",
+      "route": "faq",
+      "source": "shipping.txt",
+      "must_include": ["48 小时"]
+    },
+    {
+      "id": "lookup_miss_faq",
+      "question": "如果买 BOOK-999，书店一般付款后多久发货？",
+      "route": "faq",
+      "source": "shipping.txt",
+      "must_include": ["48 小时"]
+    },
+    {
+      "id": "return_faq",
+      "question": "图书退货需要哪些条件？",
+      "route": "faq",
+      "source": "returns.md",
+      "must_include": ["签收后 7 天内", "未拆封", "订单编号"]
+    },
+    {
+      "id": "refund_unknown",
+      "question": "退货申请提交后，退款几天到账？",
+      "route": "unknown",
+      "source": null,
+      "must_include": ["现有资料无法确认"]
+    }
+  ]
+}

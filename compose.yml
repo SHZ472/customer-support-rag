@@ -1,0 +1,81 @@
+name: customer-support-rag
+
+services:
+  api:
+    image: customer-support-rag:showcase
+    build: .
+    environment:
+      HF_HUB_OFFLINE: "${RAG_MODEL_OFFLINE:-0}"
+      TRANSFORMERS_OFFLINE: "${RAG_MODEL_OFFLINE:-0}"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      FAQ_QUERY_CACHE_SIZE: "${FAQ_QUERY_CACHE_SIZE:-256}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8150:8000"
+    volumes:
+      - "${RAG_MODEL_CACHE:-model_cache}:/app/.cache/huggingface"
+    networks: [default, database]
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/openapi.json', timeout=2).close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 240s
+
+  postgres:
+    image: postgres:17.11
+    environment:
+      POSTGRES_USER: course_admin
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks: [database]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "course_admin", "-d", "postgres"]
+      interval: 3s
+      timeout: 2s
+      retries: 15
+
+  prometheus:
+    image: prom/prometheus:v3.13.5
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:9150:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:13.3.0
+    depends_on:
+      - prometheus
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
+      GF_PLUGINS_PREINSTALL_AUTO_UPDATE: "false"
+    ports:
+      - "127.0.0.1:3150:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+
+networks:
+  database:
+    internal: true
+
+volumes:
+  model_cache:
+  postgres_data:
+  prometheus_data:
+  grafana_data:

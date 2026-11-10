@@ -1,0 +1,10 @@
+**
+!requirements.txt
+!course_cache.py
+!app
+!app/*.py
+!data
+!data/*.json
+!data/*.sql
+!data/*.txt
+!data/*.md

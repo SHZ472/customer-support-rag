@@ -1,0 +1,191 @@
+{
+  "id": null,
+  "uid": "agentguide-customer-rag",
+  "title": "星河书店客服 API 监控",
+  "description": "本地教学流量。演示请求中包含故意发送的空白问题（HTTP 422）。",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "editable": false,
+  "panels": [
+    {
+      "id": 1,
+      "title": "请求量 QPS（15 秒窗口）",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "day49-customer-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "day49-customer-prometheus"
+          },
+          "expr": "sum(rate(agentguide_http_requests_total{job=\"agentguide-customer-rag\",route=\"/ask\"}[15s]))",
+          "range": true,
+          "legendFormat": "请求量 QPS（15 秒窗口）"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "HTTP 4xx / 5xx 比例（%）",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "day49-customer-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "day49-customer-prometheus"
+          },
+          "expr": "100 * (sum(rate(agentguide_http_requests_total{job=\"agentguide-customer-rag\",route=\"/ask\",status=~\"[45]..\"}[15s])) or vector(0)) / sum(rate(agentguide_http_requests_total{job=\"agentguide-customer-rag\",route=\"/ask\"}[15s]))",
+          "range": true,
+          "legendFormat": "HTTP 4xx / 5xx 比例（%）"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "平均延迟（ms）",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "day49-customer-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "day49-customer-prometheus"
+          },
+          "expr": "1000 * sum(rate(agentguide_http_request_duration_seconds_sum{job=\"agentguide-customer-rag\",route=\"/ask\"}[15s])) / sum(rate(agentguide_http_request_duration_seconds_count{job=\"agentguide-customer-rag\",route=\"/ask\"}[15s]))",
+          "range": true,
+          "legendFormat": "平均延迟（ms）"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Prometheus 采集状态",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "day49-customer-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "day49-customer-prometheus"
+          },
+          "expr": "up{job=\"agentguide-customer-rag\"}",
+          "range": true,
+          "legendFormat": "Prometheus 采集状态"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    }
+  ]
+}
